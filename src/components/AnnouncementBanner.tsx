@@ -20,6 +20,7 @@ const DEFAULT_CONFIG: BannerConfig = {
 
 const CACHE_KEY = 'announcement_banner'
 const CACHE_DURATION = 60 * 60 * 1000 // 1 hour in milliseconds
+const BANNER_VISIBILITY_KEY = 'announcement_banner_visibility'
 
 const AnnouncementBanner = () => {
   const [config, setConfig] = useState<BannerConfig>(DEFAULT_CONFIG)
@@ -57,6 +58,12 @@ const AnnouncementBanner = () => {
     }
 
     fetchConfig()
+
+    // Check if the banner visibility has been previously saved in localStorage
+    const storedVisibility = localStorage.getItem(BANNER_VISIBILITY_KEY)
+    if (storedVisibility === 'false') {
+      setIsVisible(false)
+    }
   }, [])
 
   // Check if banner should be shown
@@ -64,6 +71,12 @@ const AnnouncementBanner = () => {
 
   // Extract message without the arrow
   const message = config.message?.replace('→', '').replace('→', '').trim()
+
+  const handleClose = () => {
+    setIsVisible(false)
+    // Save the visibility state in localStorage to persist it across refreshes
+    localStorage.setItem(BANNER_VISIBILITY_KEY, 'false')
+  }
 
   return (
     <div className="fixed top-12 sm:top-16 md:top-20 left-0 right-0 z-50 pointer-events-none w-full px-2 sm:px-4">
@@ -87,7 +100,7 @@ const AnnouncementBanner = () => {
                   "bg-gradient-to-r from-black/40 to-black/20"
                 )}
                 style={{ 
-                  boxShadow: `0 0 0 1px ${config.backgroundColor}20, 0 8px 30px rgb(0,0,0,0.12), inset 0 1px 1px ${config.backgroundColor}10`,
+                  boxShadow: `0 0 0 1px ${config.backgroundColor}20, 0 8px 30px rgb(0,0,0,0.12), inset 0 1px 1px ${config.backgroundColor}10` ,
                 }}
               >
                 <div className={cn(
@@ -99,7 +112,7 @@ const AnnouncementBanner = () => {
                 style={{ 
                   backgroundColor: config.backgroundColor,
                   color: config.textColor,
-                  boxShadow: `0 0 0 1px ${config.backgroundColor}50, inset 0 1px 1px ${config.textColor}20`,
+                  boxShadow: `0 0 0 1px ${config.backgroundColor}50, inset 0 1px 1px ${config.textColor}20` ,
                 }}
                 >
                   📣 New
@@ -134,7 +147,7 @@ const AnnouncementBanner = () => {
                   </span>
                 )}
                 <button
-                  onClick={() => setIsVisible(false)}
+                  onClick={handleClose}
                   className="ml-0.5 sm:ml-1 p-1 sm:p-1.5 -mr-0.5 sm:-mr-1 rounded-full hover:bg-white/10 transition-all duration-200 flex-shrink-0 opacity-75 hover:opacity-100"
                   style={{ color: config.textColor }}
                   aria-label="Close announcement"
@@ -150,4 +163,4 @@ const AnnouncementBanner = () => {
   )
 }
 
-export default AnnouncementBanner 
+export default AnnouncementBanner

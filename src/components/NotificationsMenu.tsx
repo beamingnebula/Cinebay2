@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getNotifications, type Notification } from "@/lib/tmdb";
 import { Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { formatDistanceToNow } from "date-fns";
 import {
   DropdownMenu,
@@ -12,31 +12,42 @@ import {
 
 const NotificationsMenu = () => {
   const navigate = useNavigate();
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [readSet, setReadSet] = useState<Set<string>>(() =>
+    new Set(JSON.parse(localStorage.getItem("readNotifications") || "[]"))
+  );
 
   const { data: notifications = [] } = useQuery({
     queryKey: ["notifications"],
     queryFn: getNotifications,
-    refetchInterval: 1000 * 60 * 5, // Refetch every 5 minutes
+    refetchInterval: 1000 * 60 * 5, // Refetch every 5 mins
   });
 
   useEffect(() => {
-    // Get read notifications from localStorage
-    const readNotifications = new Set(JSON.parse(localStorage.getItem("readNotifications") || "[]"));
-    setUnreadCount(notifications.filter(n => !readNotifications.has(n.id)).length);
+    const stored = JSON.parse(localStorage.getItem("readNotifications") || "[]");
+    setReadSet(new Set(stored));
   }, [notifications]);
 
-  const handleNotificationClick = (notification: Notification) => {
-    // Mark as read
-    const readNotifications = new Set(JSON.parse(localStorage.getItem("readNotifications") || "[]"));
-    readNotifications.add(notification.id);
-    localStorage.setItem("readNotifications", JSON.stringify(Array.from(readNotifications)));
-    setUnreadCount(prev => Math.max(0, prev - 1));
+  const unreadCount = useMemo(
+    () => notifications.filter(n => !readSet.has(n.id)).length,
+    [notifications, readSet]
+  );
 
-    // Navigate based on notification type
-    if (notification.data?.movieId) {
-      navigate(`/${notification.data.mediaType}/${notification.data.movieId}/watch`);
+  const handleNotificationClick = (notification: Notification) => {
+    const updatedSet = new Set(readSet);
+    updatedSet.add(notification.id);
+    localStorage.setItem("readNotifications", JSON.stringify(Array.from(updatedSet)));
+    setReadSet(updatedSet);
+
+    const { movieId, mediaType } = notification.data || {};
+    if (movieId) {
+      navigate(`/${mediaType}/${movieId}/watch`);
     }
+  };
+
+  const markAllAsRead = () => {
+    const allIds = notifications.map(n => n.id);
+    localStorage.setItem("readNotifications", JSON.stringify(allIds));
+    setReadSet(new Set(allIds));
   };
 
   const getNotificationIcon = (type: Notification["type"]) => {
@@ -52,11 +63,16 @@ const NotificationsMenu = () => {
     }
   };
 
+  // Sort so newest notifications appear first
+  const sortedNotifications = [...notifications].sort(
+    (a, b) => b.timestamp - a.timestamp
+  );
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className="relative" aria-label="Notifications">
-          <Bell className="w-6 h-6 text-white hover:text-gray-300" />
+          <Bell className="w-6 h-6 text-white hover:text-gray-300 transition-all duration-200" />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
               {unreadCount}
@@ -64,35 +80,40 @@ const NotificationsMenu = () => {
           )}
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 bg-black/95 text-white border border-gray-800 p-2 rounded-lg shadow-xl">
+
+      <DropdownMenuContent
+        align="end"
+        className="w-80 bg-black/95 text-white border border-gray-800 p-2 rounded-lg shadow-xl"
+      >
         <div className="flex items-center justify-between mb-2 px-2">
           <h3 className="font-semibold">Notifications</h3>
           {notifications.length > 0 && (
             <button
-              onClick={() => {
-                localStorage.setItem("readNotifications", JSON.stringify(notifications.map(n => n.id)));
-                setUnreadCount(0);
-              }}
-              className="text-xs text-gray-400 hover:text-white"
+              onClick={markAllAsRead}
+              className="text-xs text-gray-400 hover:text-white transition-all duration-200"
             >
               Mark all as read
             </button>
           )}
         </div>
-        <div className="max-h-[400px] overflow-y-auto">
-          {notifications.length === 0 ? (
+
+        <div
+          className="max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-900"
+          aria-live="polite"
+        >
+          {sortedNotifications.length === 0 ? (
             <div className="text-center text-gray-400 py-4">No notifications</div>
           ) : (
-            notifications.map((notification) => {
-              const readNotifications = new Set(JSON.parse(localStorage.getItem("readNotifications") || "[]"));
-              const isRead = readNotifications.has(notification.id);
-
+            sortedNotifications.map(notification => {
+              const isRead = readSet.has(notification.id);
               return (
                 <div
                   key={notification.id}
                   onClick={() => handleNotificationClick(notification)}
-                  className={`flex items-start gap-3 p-3 hover:bg-gray-800/50 cursor-pointer rounded-lg transition-colors mb-1 ${
-                    isRead ? "opacity-60" : ""
+                  className={`flex items-start gap-3 p-3 cursor-pointer rounded-lg mb-1 transition-all duration-200 ${
+                    isRead
+                      ? "opacity-60 hover:bg-gray-800/30 border-l-4 border-gray-700"
+                      : "bg-gray-800 hover:bg-gray-700"
                   }`}
                 >
                   <span className="text-xl">{getNotificationIcon(notification.type)}</span>
@@ -116,4 +137,4 @@ const NotificationsMenu = () => {
   );
 };
 
-export default NotificationsMenu; 
+export default NotificationsMenu;

@@ -15,11 +15,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+interface Movie {
+  id: number;
+  title: string;
+  name: string;
+  poster_path: string | null;
+  media_type: string;
+  number_of_episodes?: number;
+}
+
 const Navbar = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [selectedMovie, setSelectedMovie] = useState<any>(null);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
   const { data: searchResults } = useQuery({
     queryKey: ["search", searchQuery],
@@ -27,7 +36,6 @@ const Navbar = () => {
     enabled: searchQuery.length > 2,
   });
 
-  // Add click outside handler to close search
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -52,10 +60,8 @@ const Navbar = () => {
   };
 
   const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      if (searchQuery.length >= 2) {
-        handleNavigation(`/search?q=${encodeURIComponent(searchQuery)}`);
-      }
+    if (e.key === 'Enter' && searchQuery.length >= 2) {
+      handleNavigation(`/search?q=${encodeURIComponent(searchQuery)}`);
     }
     if (e.key === 'Escape') {
       setIsSearchOpen(false);
@@ -66,15 +72,13 @@ const Navbar = () => {
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen);
     if (!isSearchOpen) {
-      setTimeout(() => {
-        document.querySelector<HTMLInputElement>('.search-input')?.focus();
-      }, 100);
+      setTimeout(() => document.querySelector<HTMLInputElement>('.search-input')?.focus(), 100);
     } else {
       setSearchQuery("");
     }
   };
 
-  const handleMovieSelect = (movie: any) => {
+  const handleMovieSelect = (movie: Movie) => {
     setSelectedMovie(movie);
     setSearchQuery("");
     setIsSearchOpen(false);
@@ -93,15 +97,9 @@ const Navbar = () => {
           </Link>
           <MobileMenu />
           <div className="hidden md:flex items-center gap-6">
-            <button onClick={() => handleNavigation("/")} className="text-white hover:text-gray-300">
-              Home
-            </button>
-            <button onClick={() => handleNavigation("/category/tv")} className="text-white hover:text-gray-300">
-              TV Shows
-            </button>
-            <button onClick={() => handleNavigation("/category/movie")} className="text-white hover:text-gray-300">
-              Movies
-            </button>
+            <button onClick={() => handleNavigation("/")} className="text-white hover:text-gray-300">Home</button>
+            <button onClick={() => handleNavigation("/category/tv")} className="text-white hover:text-gray-300">TV Shows</button>
+            <button onClick={() => handleNavigation("/category/movie")} className="text-white hover:text-gray-300">Movies</button>
             <CategoriesMenu />
           </div>
         </div>
@@ -150,9 +148,7 @@ const Navbar = () => {
                         className="w-12 h-16 object-cover rounded"
                       />
                     ) : (
-                      <div className="w-12 h-16 bg-gray-800 rounded flex items-center justify-center text-gray-500">
-                        No Image
-                      </div>
+                      <div className="w-12 h-16 bg-gray-800 rounded flex items-center justify-center text-gray-500">No Image</div>
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-medium truncate">{result.title || result.name}</p>
@@ -176,15 +172,9 @@ const Navbar = () => {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-48 bg-black/90 text-white border-gray-700">
-              <DropdownMenuItem onClick={showMyList} className="cursor-pointer hover:bg-gray-800">
-                My List
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => toast.info("Account settings coming soon!")} className="cursor-pointer hover:bg-gray-800">
-                Account Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleNavigation("/legal")} className="cursor-pointer hover:bg-gray-800">
-                Legal Disclaimer
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={showMyList} className="cursor-pointer hover:bg-gray-800">My List</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toast.info("Account settings coming soon!")} className="cursor-pointer hover:bg-gray-800">Account Settings</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleNavigation("/legal")} className="cursor-pointer hover:bg-gray-800">Legal Disclaimer</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
