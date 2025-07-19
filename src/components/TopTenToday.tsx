@@ -28,7 +28,7 @@ const TopTenToday = () => {
   if (!topTen.length) return null;
 
   return (
-    <div className="px-[4%] mb-12">
+    <div className="px-[4%] mb-12 md:block hidden">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <h2 className="text-4xl font-bold text-white">

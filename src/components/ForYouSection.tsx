@@ -16,7 +16,7 @@ const ForYouSection = () => {
   }
 
   return (
-    <div className="px-[4%] mb-12">
+    <div className="px-[4%] mb-12 md:block hidden">
       <div className="flex items-center gap-2 mb-6">
         <div className="w-1 h-6 bg-red-600"></div>
         <h2 className="text-2xl font-semibold text-white flex items-center gap-2">

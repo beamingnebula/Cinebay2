@@ -19,7 +19,7 @@ const ContinueWatching = () => {
   }
 
   return (
-    <div className="px-[4%] mb-8">
+    <div className="px-[4%] mb-8 md:block hidden">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-1 h-6 bg-red-600"></div>
         <h2 className="text-xl font-semibold text-white">Continue watching</h2>
