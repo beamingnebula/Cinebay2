@@ -1,11 +1,10 @@
-import { Search, User } from "lucide-react";
+import { Search, User, History, Heart, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { searchContent } from "@/lib/tmdb";
 import { toast } from "sonner";
 import MovieDetailsModal from "./MovieDetailsModal";
-import NotificationsMenu from "./NotificationsMenu";
 import CategoriesMenu from "./CategoriesMenu";
 import MobileMenu from "./MobileMenu";
 import {
@@ -89,21 +88,59 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-gradient-to-b from-black/80 to-transparent px-4 py-3">
+    <nav className="fixed top-0 w-full z-50 bg-black/90 backdrop-blur-sm px-4 py-3">
       <div className="flex items-center justify-between max-w-7xl mx-auto">
-        <div className="flex items-center gap-4 md:gap-8">
-          <Link to="/" className="text-red-600 text-2xl md:text-3xl font-bold">
-            CINEPLAY
+        <div className="flex items-center gap-6">
+          {/* Logo */}
+          <Link to="/" className="text-white text-2xl font-black tracking-wider">
+            CINEBAY
           </Link>
-          <MobileMenu />
+          
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
-            <button onClick={() => handleNavigation("/")} className="text-white hover:text-gray-300">Home</button>
-            <button onClick={() => handleNavigation("/category/tv")} className="text-white hover:text-gray-300">TV Shows</button>
-            <button onClick={() => handleNavigation("/category/movie")} className="text-white hover:text-gray-300">Movies</button>
-            <CategoriesMenu />
+            {/* Home Button */}
+            <Link 
+              to="/" 
+              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full text-white text-sm font-medium transition-colors"
+            >
+              <div className="w-4 h-4 bg-white rounded-sm flex items-center justify-center">
+                <div className="w-2 h-2 bg-red-600 rounded-sm"></div>
+              </div>
+              Home
+            </Link>
+            
+            {/* Browse Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-1 text-white hover:text-gray-300 text-sm font-medium">
+                Browse
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 bg-black/95 text-white border-gray-800">
+                <DropdownMenuItem onClick={() => handleNavigation("/category/movie")} className="cursor-pointer hover:bg-gray-800">
+                  Movies
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleNavigation("/category/tv")} className="cursor-pointer hover:bg-gray-800">
+                  TV Shows
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleNavigation("/category/kdrama")} className="cursor-pointer hover:bg-gray-800">
+                  K-Dramas
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleNavigation("/category/anime")} className="cursor-pointer hover:bg-gray-800">
+                  Anime
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
+          
+          {/* Mobile Menu */}
+          <MobileMenu />
         </div>
-        <div className="flex items-center gap-2 md:gap-4">
+
+        {/* Right Side Navigation */}
+        <div className="flex items-center gap-4">
+          {/* Search */}
           <div className="relative search-container">
             <div className="flex items-center">
               {isSearchOpen && (
@@ -122,7 +159,7 @@ const Navbar = () => {
                 onClick={toggleSearch}
                 title="Toggle search"
               >
-                <Search className="w-5 h-5 md:w-6 md:h-6 text-white hover:text-gray-300" />
+                <Search className="w-5 h-5 text-white hover:text-gray-300" />
               </button>
             </div>
             {isSearchOpen && searchResults && searchResults.length > 0 && searchQuery.length > 2 && (
@@ -164,11 +201,31 @@ const Navbar = () => {
               </div>
             )}
           </div>
-          <NotificationsMenu />
+
+          {/* History */}
+          <button 
+            className="hidden md:flex items-center gap-2 text-white hover:text-gray-300 text-sm"
+            title="History"
+          >
+            <History className="w-5 h-5" />
+            History
+          </button>
+
+          {/* Watchlist */}
+          <button 
+            onClick={showMyList}
+            className="hidden md:flex items-center gap-2 text-white hover:text-gray-300 text-sm"
+            title="Watchlist"
+          >
+            <Heart className="w-5 h-5" />
+            Watchlist
+          </button>
+
+          {/* User Profile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="focus:outline-none" title="User menu">
-                <User className="w-6 h-6 text-white hover:text-gray-300" />
+              <button className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-sm hover:bg-red-700 transition-colors">
+                U
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-48 bg-black/90 text-white border-gray-700">
